@@ -1,6 +1,6 @@
 import os
 import requests
-import urllib.request
+from polling_bot.brain import SlackClient
 from sqlalchemy.exc import OperationalError
 
 # hack to override sqlite database filename
@@ -8,10 +8,9 @@ from sqlalchemy.exc import OperationalError
 os.environ['SCRAPERWIKI_DATABASE_NAME'] = 'sqlite:///data.sqlite'
 import scraperwiki
 
+
 SLACK_WEBHOOK_URL = os.environ['MORPH_SLACK_WEBHOOK_URL']
 
-def post_slack_message(message):
-    r = requests.post(SLACK_WEBHOOK_URL, json={ "text": message })
 
 def scrape(url, table):
     res = requests.get(url)
@@ -33,7 +32,8 @@ def scrape(url, table):
                 print(record)
                 slack_message = "New %s available at %s" %\
                     (record['title'], record['url'])
-                post_slack_message(slack_message)
+                sc = SlackClient(SLACK_WEBHOOK_URL)
+                sc.post_message(slack_message)
         except OperationalError:
             # The first time we run the scraper it will throw
             # because the table doesn't exist yet
@@ -42,6 +42,7 @@ def scrape(url, table):
         scraperwiki.sqlite.save(
             unique_keys=['id'], data=record, table_name=table)
         scraperwiki.sqlite.commit_transactions()
+
 
 onspd_url = 'http://ons.maps.arcgis.com/sharing/rest/search?q=(tags%3AONS%20Postcode%20Directory%20type%3ACSV%20orgid%3AESMARspQHYMw9BZ9%20orgid%3AESMARspQHYMw9BZ9)%20-type%3A%22Layer%22%20-type%3A%20%22Map%20Document%22%20-type%3A%22Map%20Package%22%20-type%3A%22Basemap%20Package%22%20-type%3A%22Mobile%20Basemap%20Package%22%20-type%3A%22Mobile%20Map%20Package%22%20-type%3A%22ArcPad%20Package%22%20-type%3A%22Project%20Package%22%20-type%3A%22Project%20Template%22%20-type%3A%22Desktop%20Style%22%20-type%3A%22Pro%20Map%22%20-type%3A%22Layout%22%20-type%3A%22Explorer%20Map%22%20-type%3A%22Globe%20Document%22%20-type%3A%22Scene%20Document%22%20-type%3A%22Published%20Map%22%20-type%3A%22Map%20Template%22%20-type%3A%22Windows%20Mobile%20Package%22%20-type%3A%22Layer%20Package%22%20-type%3A%22Explorer%20Layer%22%20-type%3A%22Geoprocessing%20Package%22%20-type%3A%22Desktop%20Application%20Template%22%20-type%3A%22Code%20Sample%22%20-type%3A%22Geoprocessing%20Package%22%20-type%3A%22Geoprocessing%20Sample%22%20-type%3A%22Locator%20Package%22%20-type%3A%22Workflow%20Manager%20Package%22%20-type%3A%22Windows%20Mobile%20Package%22%20-type%3A%22Explorer%20Add%20In%22%20-type%3A%22Desktop%20Add%20In%22%20-type%3A%22File%20Geodatabase%22%20-type%3A%22Feature%20Collection%20Template%22%20-type%3A%22Code%20Attachment%22%20-type%3A%22Featured%20Items%22%20-type%3A%22Symbol%20Set%22%20-type%3A%22Color%20Set%22%20-type%3A%22Windows%20Viewer%20Add%20In%22%20-type%3A%22Windows%20Viewer%20Configuration%22%20&sortField=modified&sortOrder=desc&num=10&f=json'
 onsad_url = 'http://ons.maps.arcgis.com/sharing/rest/search?q=(tags%3AONS%20Address%20Directory%20type%3ACSV%20orgid%3AESMARspQHYMw9BZ9%20orgid%3AESMARspQHYMw9BZ9)%20-type%3A%22Layer%22%20-type%3A%20%22Map%20Document%22%20-type%3A%22Map%20Package%22%20-type%3A%22Basemap%20Package%22%20-type%3A%22Mobile%20Basemap%20Package%22%20-type%3A%22Mobile%20Map%20Package%22%20-type%3A%22ArcPad%20Package%22%20-type%3A%22Project%20Package%22%20-type%3A%22Project%20Template%22%20-type%3A%22Desktop%20Style%22%20-type%3A%22Pro%20Map%22%20-type%3A%22Layout%22%20-type%3A%22Explorer%20Map%22%20-type%3A%22Globe%20Document%22%20-type%3A%22Scene%20Document%22%20-type%3A%22Published%20Map%22%20-type%3A%22Map%20Template%22%20-type%3A%22Windows%20Mobile%20Package%22%20-type%3A%22Layer%20Package%22%20-type%3A%22Explorer%20Layer%22%20-type%3A%22Geoprocessing%20Package%22%20-type%3A%22Desktop%20Application%20Template%22%20-type%3A%22Code%20Sample%22%20-type%3A%22Geoprocessing%20Package%22%20-type%3A%22Geoprocessing%20Sample%22%20-type%3A%22Locator%20Package%22%20-type%3A%22Workflow%20Manager%20Package%22%20-type%3A%22Windows%20Mobile%20Package%22%20-type%3A%22Explorer%20Add%20In%22%20-type%3A%22Desktop%20Add%20In%22%20-type%3A%22File%20Geodatabase%22%20-type%3A%22Feature%20Collection%20Template%22%20-type%3A%22Code%20Attachment%22%20-type%3A%22Featured%20Items%22%20-type%3A%22Symbol%20Set%22%20-type%3A%22Color%20Set%22%20-type%3A%22Windows%20Viewer%20Add%20In%22%20-type%3A%22Windows%20Viewer%20Configuration%22%20&sortField=modified&sortOrder=desc&num=10&f=json'
