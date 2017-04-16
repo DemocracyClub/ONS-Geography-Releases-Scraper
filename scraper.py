@@ -1,6 +1,6 @@
 import os
 import requests
-from polling_bot.brain import SlackClient
+from polling_bot.brain import SlackClient, GitHubClient
 from sqlalchemy.exc import OperationalError
 
 # hack to override sqlite database filename
@@ -10,6 +10,22 @@ import scraperwiki
 
 
 SLACK_WEBHOOK_URL = os.environ['MORPH_SLACK_WEBHOOK_URL']
+GITHUB_API_KEY = os.environ['MORPH_GITHUB_API_KEY']
+
+
+def post_slack_message(record):
+    message = "New %s available at %s" % (record['title'], record['url'])
+    slack = SlackClient(SLACK_WEBHOOK_URL)
+    slack.post_message(message)
+
+
+def raise_github_issue(record):
+    owner = 'DemocracyClub'
+    repo = 'polling_deploy'
+    title = 'Import new ONSAD'
+    body = "@chris48s - New %s available at %s" % (record['title'], record['url'])
+    github = GitHubClient(GITHUB_API_KEY)
+    github.raise_issue(owner, repo, title, body)
 
 
 def scrape(url, table):
@@ -30,10 +46,9 @@ def scrape(url, table):
                 "* FROM '" + table + "' WHERE id=?", record['id'])
             if len(exists) == 0:
                 print(record)
-                slack_message = "New %s available at %s" %\
-                    (record['title'], record['url'])
-                sc = SlackClient(SLACK_WEBHOOK_URL)
-                sc.post_message(slack_message)
+                post_slack_message(record)
+                if table == 'onsad':
+                    raise_github_issue(record)
         except OperationalError:
             # The first time we run the scraper it will throw
             # because the table doesn't exist yet
