@@ -9,8 +9,15 @@ os.environ['SCRAPERWIKI_DATABASE_NAME'] = 'sqlite:///data.sqlite'
 import scraperwiki
 
 
-SLACK_WEBHOOK_URL = os.environ['MORPH_POLLING_BOT_SLACK_WEBHOOK_URL']
-GITHUB_API_KEY = os.environ['MORPH_GITHUB_ISSUE_ONLY_API_KEY']
+try:
+    SLACK_WEBHOOK_URL = os.environ['MORPH_POLLING_BOT_SLACK_WEBHOOK_URL']
+except KeyError:
+    SLACK_WEBHOOK_URL = None
+
+try:
+    GITHUB_API_KEY = os.environ['MORPH_GITHUB_ISSUE_ONLY_API_KEY']
+except KeyError:
+    GITHUB_API_KEY = None
 
 
 def post_slack_message(record):
@@ -46,9 +53,11 @@ def scrape(url, table):
                 "* FROM '" + table + "' WHERE id=?", record['id'])
             if len(exists) == 0:
                 print(record)
-                post_slack_message(record)
+                if SLACK_WEBHOOK_URL:
+                    post_slack_message(record)
                 if table == 'onsad':
-                    raise_github_issue(record)
+                    if GITHUB_API_KEY:
+                        raise_github_issue(record)
         except OperationalError:
             # The first time we run the scraper it will throw
             # because the table doesn't exist yet
