@@ -26,9 +26,8 @@ def post_slack_message(record):
     slack.post_message(message)
 
 
-def raise_github_issue(record):
+def raise_github_issue(repo, record):
     owner = 'DemocracyClub'
-    repo = 'polling_deploy'
     title = 'Import new ONSUD'
     body = "@chris48s - New %s available at %s" % (record['title'], record['url'])
     github = GitHubClient(GITHUB_API_KEY)
@@ -57,7 +56,7 @@ def scrape(url, table):
                     post_slack_message(record)
                 if table in ['onsad', 'onspd']:
                     if GITHUB_API_KEY:
-                        raise_github_issue(record)
+                        raise_github_issue('polling_deploy', record)
         except OperationalError:
             # The first time we run the scraper it will throw
             # because the table doesn't exist yet
