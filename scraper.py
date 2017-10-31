@@ -55,7 +55,7 @@ def scrape(url, table):
                 print(record)
                 if SLACK_WEBHOOK_URL:
                     post_slack_message(record)
-                if table == 'onsad':
+                if table in ['onsad', 'onspd']:
                     if GITHUB_API_KEY:
                         raise_github_issue(record)
         except OperationalError:
