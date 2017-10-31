@@ -65,9 +65,9 @@ def scrape(url, table):
                 if table in ['onsad', 'onspd']:
                     if GITHUB_API_KEY:
                         raise_github_issue('polling_deploy', record)
-                #if table == 'lgd':
-                #    if GITHUB_API_KEY:
-                #        raise_github_issue('UK-Polling-Stations', record)
+                if table == 'lgd':
+                    if GITHUB_API_KEY:
+                        raise_github_issue('UK-Polling-Stations', record)
         except OperationalError:
             # The first time we run the scraper it will throw
             # because the table doesn't exist yet
