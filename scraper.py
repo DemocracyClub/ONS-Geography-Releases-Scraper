@@ -9,6 +9,8 @@ os.environ['SCRAPERWIKI_DATABASE_NAME'] = 'sqlite:///data.sqlite'
 import scraperwiki
 
 
+SEND_NOTIFICATIONS = True
+
 try:
     SLACK_WEBHOOK_URL = os.environ['MORPH_POLLING_BOT_SLACK_WEBHOOK_URL']
 except KeyError:
@@ -60,13 +62,13 @@ def scrape(url, table):
                 "* FROM '" + table + "' WHERE id=?", record['id'])
             if len(exists) == 0:
                 print(record)
-                if SLACK_WEBHOOK_URL:
+                if SLACK_WEBHOOK_URL and SEND_NOTIFICATIONS:
                     post_slack_message(record)
                 if table in ['onsad', 'onspd']:
-                    if GITHUB_API_KEY:
+                    if GITHUB_API_KEY and SEND_NOTIFICATIONS:
                         raise_github_issue('polling_deploy', record)
                 if table == 'lgd':
-                    if GITHUB_API_KEY:
+                    if GITHUB_API_KEY and SEND_NOTIFICATIONS:
                         raise_github_issue('UK-Polling-Stations', record)
         except OperationalError:
             # The first time we run the scraper it will throw
