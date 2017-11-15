@@ -55,7 +55,7 @@ def scrape(url, table):
         try:
             record['title'] = result['title']
         except KeyError:
-            record['title'] = result['attributes']['title']
+            record['title'] = result['attributes']['name']
 
         try:
             exists = scraperwiki.sql.select(
@@ -67,7 +67,7 @@ def scrape(url, table):
                 if table in ['onsad', 'onspd']:
                     if GITHUB_API_KEY and SEND_NOTIFICATIONS:
                         raise_github_issue('polling_deploy', record)
-                if table == 'lgd':
+                if table == 'lgd' and 'full extent' in record['title'].lower():
                     if GITHUB_API_KEY and SEND_NOTIFICATIONS:
                         raise_github_issue('UK-Polling-Stations', record)
         except OperationalError:
