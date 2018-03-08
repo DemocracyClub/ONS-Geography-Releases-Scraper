@@ -83,9 +83,13 @@ def scrape(url, table):
             print(record)
             if SLACK_WEBHOOK_URL and SEND_NOTIFICATIONS:
                 post_slack_message(record)
+
             if table in ['onsad', 'onspd']:
                 if GITHUB_API_KEY and SEND_NOTIFICATIONS:
                     raise_github_issue('polling_deploy', record)
+            if table == 'onspd':
+                if GITHUB_API_KEY and SEND_NOTIFICATIONS:
+                    raise_github_issue('EveryElection', record)
             if table == 'lgd' and 'full extent' in record['title'].lower():
                 if GITHUB_API_KEY and SEND_NOTIFICATIONS:
                     raise_github_issue('UK-Polling-Stations', record)
