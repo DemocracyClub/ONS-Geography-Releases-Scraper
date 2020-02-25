@@ -30,7 +30,7 @@ def post_slack_message(record):
 def raise_github_issue(repo, record):
     owner = "DemocracyClub"
     title = "Import %s" % (record["title"])
-    body = "@chris48s - New %s available at %s" % (record["title"], record["url"])
+    body = "New %s available at %s" % (record["title"], record["url"])
     github = GitHubClient(GITHUB_API_KEY)
     github.raise_issue(owner, repo, title, body)
 
